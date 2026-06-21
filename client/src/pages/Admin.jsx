@@ -35,6 +35,7 @@ const Admin = () => {
     }
   };
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [newProduct, setNewProduct] = useState({
     name: "",
     description: "",
@@ -46,7 +47,7 @@ const Admin = () => {
     images: [{ url: "", alt: "" }],
   });
 
-  const addProduct = async (e) => {
+  const saveProduct = async (e) => {
     e.preventDefault();
     try {
       const payload = {
@@ -56,9 +57,15 @@ const Admin = () => {
         sizes: newProduct.sizes.split(",").map((s) => s.trim()),
         colors: newProduct.colors.split(",").map((c) => c.trim()),
       };
-      await axios.post("/api/products", payload, { headers });
-      toast.success("Product added!");
+      if (editingId) {
+        await axios.put(`/api/products/${editingId}`, payload, { headers });
+        toast.success("Product updated!");
+      } else {
+        await axios.post("/api/products", payload, { headers });
+        toast.success("Product added!");
+      }
       setShowForm(false);
+      setEditingId(null);
       fetchProducts();
       setNewProduct({
         name: "",
@@ -71,8 +78,24 @@ const Admin = () => {
         images: [{ url: "", alt: "" }],
       });
     } catch {
-      toast.error("Failed to add product");
+      toast.error(
+        editingId ? "Failed to update product" : "Failed to add product",
+      );
     }
+  };
+  const startEdit = (product) => {
+    setEditingId(product._id);
+    setNewProduct({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      category: product.category,
+      stock: product.stock,
+      sizes: product.sizes.join(","),
+      colors: product.colors.join(","),
+      images: product.images,
+    });
+    setShowForm(true);
   };
   const deleteProduct = async (id) => {
     if (!confirm("Delete this product?")) return;
@@ -268,7 +291,6 @@ const Admin = () => {
       )}
 
       {/* Products Tab */}
-      {/* Products Tab */}
       {tab === "products" && (
         <div>
           <div
@@ -281,7 +303,10 @@ const Admin = () => {
           >
             <h2 style={{ fontSize: 20 }}>All Products</h2>
             <button
-              onClick={() => setShowForm(!showForm)}
+              onClick={() => {
+                setShowForm(!showForm);
+                setEditingId(null);
+              }}
               style={{
                 padding: "10px 20px",
                 background: "#1a1a1a",
@@ -299,7 +324,7 @@ const Admin = () => {
           {/* Add Product Form */}
           {showForm && (
             <form
-              onSubmit={addProduct}
+              onSubmit={saveProduct}
               style={{
                 border: "1px solid #eee",
                 borderRadius: 12,
@@ -495,7 +520,7 @@ const Admin = () => {
                     cursor: "pointer",
                   }}
                 >
-                  Add Product
+                  {editingId ? "Save Changes" : "Add Product"}
                 </button>
               </div>
             </form>
@@ -557,6 +582,21 @@ const Admin = () => {
                     </span>
                   </td>
                   <td style={{ padding: "12px 8px" }}>
+                    <button
+                      onClick={() => startEdit(p)}
+                      style={{
+                        padding: "6px 14px",
+                        background: "#fff",
+                        border: "1px solid #ddd",
+                        color: "#1a1a1a",
+                        borderRadius: 6,
+                        fontSize: 12,
+                        cursor: "pointer",
+                        marginRight: 8,
+                      }}
+                    >
+                      Edit
+                    </button>
                     <button
                       onClick={() => deleteProduct(p._id)}
                       style={{

@@ -209,8 +209,8 @@ const Home = () => {
             }}
           >
             <img
-              src="https://placehold.co/180x240/e8e4dc/5a5248?text=New+In"
-              alt=""
+              src="/new-in.jpg"
+              alt="New In"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
             <div
@@ -259,8 +259,8 @@ const Home = () => {
             }}
           >
             <img
-              src="https://placehold.co/200x280/d4cfc8/5a5248?text=Essentials"
-              alt=""
+              src="/essentials.jpg"
+              alt="Essentials"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
             <div
@@ -308,8 +308,8 @@ const Home = () => {
             }}
           >
             <img
-              src="https://placehold.co/150x200/c8bfb4/5a5248?text=Sale"
-              alt=""
+              src="/oversized-blazer.jpg"
+              alt="Sale"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
             <div
@@ -693,7 +693,7 @@ const Home = () => {
                 fontWeight: 400,
               }}
             >
-              Shop by Category
+              Category
             </h2>
           </div>
         </AnimatedSection>
@@ -707,22 +707,26 @@ const Home = () => {
           {[
             {
               name: "Tops",
-              img: "https://placehold.co/300x380/e8e4dc/5a5248?text=Tops",
+
+              img: "/tops.jpg",
               delay: 0,
             },
             {
               name: "Bottoms",
-              img: "https://placehold.co/300x380/d4cfc8/5a5248?text=Bottoms",
+
+              img: "/bottoms.jpg",
               delay: 0.1,
             },
             {
               name: "Outerwear",
-              img: "https://placehold.co/300x380/c8bfb4/5a5248?text=Outerwear",
+
+              img: "/outerwear.jpg",
               delay: 0.2,
             },
             {
               name: "Accessories",
-              img: "https://placehold.co/300x380/e0d8d0/5a5248?text=Accessories",
+
+              img: "/accessories.jpg",
               delay: 0.3,
             },
           ].map((cat) => (
@@ -1188,7 +1192,7 @@ const Home = () => {
               © 2026 Velour. All rights reserved.
             </p>
             <p style={{ fontSize: 12, color: "#6b6560" }}>
-              Made with ♥ for fashion lovers
+              Privacy Policy · Terms of Service
             </p>
           </div>
         </div>

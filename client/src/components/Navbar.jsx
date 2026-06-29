@@ -7,6 +7,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("velour_user") || "null");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const logout = () => {
     localStorage.removeItem("velour_token");
@@ -17,7 +18,16 @@ const Navbar = () => {
 
   return (
     <>
+      <style>{`
+        .desktop-nav-links { display: flex; }
+        .mobile-menu-btn { display: none; }
+        @media (max-width: 768px) {
+          .desktop-nav-links { display: none; }
+          .mobile-menu-btn { display: block; }
+        }
+      `}</style>
       {/* Announcement bar */}
+
       <div
         style={{
           background: "#0f0f0f",
@@ -30,7 +40,6 @@ const Navbar = () => {
       >
         FREE SHIPPING ON ORDERS OVER $75 · NEW COLLECTION NOW LIVE
       </div>
-
       {/* Main navbar */}
       <nav
         style={{
@@ -54,8 +63,8 @@ const Navbar = () => {
         >
           {/* Left links */}
           <div
+            className="desktop-nav-links"
             style={{
-              display: "flex",
               gap: 32,
               fontSize: 13,
               letterSpacing: 0.5,
@@ -77,6 +86,31 @@ const Navbar = () => {
               Sale
             </Link>
           </div>
+
+          {/* Mobile hamburger button */}
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 8,
+            }}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
 
           {/* Logo center */}
           <Link
@@ -255,6 +289,49 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
+      {/* Mobile dropdown menu */}
+      {mobileMenuOpen && (
+        <div
+          className="mobile-menu-btn"
+          style={{
+            background: "#fff",
+            borderBottom: "1px solid #e8e5e0",
+            padding: "16px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
+          <Link
+            to="/shop"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "#6b6560", fontSize: 14 }}
+          >
+            Shop
+          </Link>
+          <Link
+            to="/shop?category=Tops"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "#6b6560", fontSize: 14 }}
+          >
+            Tops
+          </Link>
+          <Link
+            to="/shop?category=Outerwear"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "#6b6560", fontSize: 14 }}
+          >
+            Outerwear
+          </Link>
+          <Link
+            to="/shop?tag=sale"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "#c4602a", fontWeight: 500, fontSize: 14 }}
+          >
+            Sale
+          </Link>
+        </div>
+      )}
     </>
   );
 };

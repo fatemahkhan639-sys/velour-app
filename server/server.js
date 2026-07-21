@@ -17,6 +17,9 @@ app.use("/api/payment", require("./routes/payment"));
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
+// TEMPORARY — remove after seeding cloud database
+app.get("/api/seed-once-temp", require("./seedRoute"));
+
 app.listen(process.env.PORT, () =>
   console.log(`Server running on http://localhost:${process.env.PORT}`),
 );

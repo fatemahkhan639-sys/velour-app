@@ -1,25 +1,47 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 
+import usePageTitle from "../hooks/usePageTitle";
+
 const Shop = () => {
+  usePageTitle("Shop");
+ const [searchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState("");
+ const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
   const [hovered, setHovered] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+useEffect(() => {
+    setKeyword(searchParams.get("keyword") || "");
+  }, [searchParams]);
+
+ useEffect(() => {
+    setKeyword(searchParams.get("keyword") || "");
+  }, [searchParams]);
 
   useEffect(() => {
+    setLoading(true);
     const params = new URLSearchParams();
     if (category) params.append("category", category);
     if (sort) params.append("sort", sort);
+    if (keyword) params.append("keyword", keyword);
     axios
       .get(`/api/products?${params}`)
-      .then((r) => setProducts(r.data.products || []));
-  }, [category, sort]);
+      .then((r) => setProducts(r.data.products || []))
+      .finally(() => setLoading(false));
+  }, [category, sort, keyword]);
 
   return (
     <div style={{ maxWidth: 1200, margin: "40px auto", padding: "0 24px" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .shop-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+          .shop-img { height: 200px !important; }
+        }
+      `}</style>
       <div style={{ marginBottom: 40 }}>
         <p
           style={{
@@ -41,6 +63,25 @@ const Shop = () => {
         >
           All Products
         </h1>
+      </div>
+      {/* Search box */}
+      <div style={{ marginBottom: 24 }}>
+       <input
+          type="text"
+          name="shopSearch"
+          id="shopSearch"
+          placeholder="Search products..."
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          style={{
+            width: "100%",
+            maxWidth: 400,
+            padding: "12px 16px",
+            border: "1px solid #e8e5e0",
+            borderRadius: 8,
+            fontSize: 14,
+          }}
+        />
       </div>
 
       {/* Filters */}
@@ -88,9 +129,21 @@ const Shop = () => {
           <option value="popular">Most Popular</option>
         </select>
       </div>
-
-      {/* Grid */}
+{/* Grid */}
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "80px 24px", color: "#a8a29a" }}>
+          Loading products...
+        </div>
+      ) : products.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "80px 24px" }}>
+          <p style={{ fontSize: 18, marginBottom: 8 }}>No products found</p>
+          <p style={{ color: "#a8a29a", fontSize: 14 }}>
+            Try adjusting your search or filters
+          </p>
+        </div>
+      ) : (
       <div
+        className="shop-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
@@ -124,6 +177,7 @@ const Shop = () => {
               onClick={() => navigate(`/product/${p._id}`)}
             >
               <img
+                className="shop-img"
                 src={p.images[0]?.url}
                 alt={p.name}
                 style={{
@@ -240,8 +294,9 @@ const Shop = () => {
               </button>
             </div>
           </div>
-        ))}
+       ))}
       </div>
+      )}
     </div>
   );
 };

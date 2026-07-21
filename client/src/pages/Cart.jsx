@@ -1,26 +1,54 @@
 import { useCart } from "../context/CartContext";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import usePageTitle from "../hooks/usePageTitle";
 
 const Cart = () => {
+  usePageTitle("Cart");
   const { items, removeItem, itemCount, total, clearCart } = useCart();
   const navigate = useNavigate();
 
   if (itemCount === 0)
     return (
-      <div style={{ textAlign: "center", padding: "80px 24px" }}>
-        <p style={{ fontSize: 24, marginBottom: 16 }}>🛍 Your cart is empty</p>
+      <div
+        style={{
+          minHeight: "50vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          padding: "80px 24px",
+        }}
+      >
+        <div style={{ fontSize: 56, marginBottom: 16 }}>🛍️</div>
+        <h1
+          style={{
+            fontSize: 24,
+            fontFamily: "Playfair Display, serif",
+            fontWeight: 400,
+            marginBottom: 8,
+          }}
+        >
+          Your cart is empty
+        </h1>
+        <p style={{ color: "#6b6560", fontSize: 14, marginBottom: 32, maxWidth: 320 }}>
+          Looks like you haven't added anything yet. Start exploring our
+          latest collection.
+        </p>
         <Link
           to="/shop"
           style={{
-            background: "#1a1a1a",
+            background: "#0f0f0f",
             color: "#fff",
-            padding: "12px 28px",
-            borderRadius: 8,
-            fontSize: 14,
+            padding: "14px 32px",
+            borderRadius: 6,
+            fontSize: 13,
+            fontWeight: 600,
+            letterSpacing: 1,
           }}
         >
-          Continue Shopping
+          CONTINUE SHOPPING
         </Link>
       </div>
     );

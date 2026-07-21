@@ -10,6 +10,7 @@ import { useCart } from "../context/CartContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { countries, validatePostalCode } from "../data/countries";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
@@ -198,7 +199,10 @@ const CheckoutForm = ({ shippingAddress }) => {
   );
 };
 
+import usePageTitle from "../hooks/usePageTitle";
+
 const Payment = () => {
+  usePageTitle("Checkout");
   const { items } = useCart();
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -209,6 +213,7 @@ const Payment = () => {
     country: "",
   });
   const [step, setStep] = useState(1);
+  const [postalError, setPostalError] = useState("");
 
   useEffect(() => {
     if (items.length === 0) navigate("/cart");
@@ -242,6 +247,8 @@ const Payment = () => {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <input
             placeholder="Full name"
+            name="fullName"
+            id="fullName"
             value={form.fullName}
             onChange={(e) => setForm({ ...form, fullName: e.target.value })}
             style={{
@@ -253,6 +260,8 @@ const Payment = () => {
           />
           <input
             placeholder="Street address"
+            name="street"
+            id="street"
             value={form.street}
             onChange={(e) => setForm({ ...form, street: e.target.value })}
             style={{
@@ -264,6 +273,8 @@ const Payment = () => {
           />
           <input
             placeholder="City"
+            name="city"
+            id="city"
             value={form.city}
             onChange={(e) => setForm({ ...form, city: e.target.value })}
             style={{
@@ -273,28 +284,57 @@ const Payment = () => {
               fontSize: 14,
             }}
           />
-          <input
-            placeholder="Postal code"
-            value={form.postalCode}
-            onChange={(e) => setForm({ ...form, postalCode: e.target.value })}
-            style={{
-              padding: "12px 16px",
-              border: "1px solid #e8e5e0",
-              borderRadius: 8,
-              fontSize: 14,
-            }}
-          />
-          <input
-            placeholder="Country"
+          <div>
+            <input
+              placeholder="Postal code"
+              name="postalCode"
+              id="postalCode"
+              value={form.postalCode}
+              onChange={(e) => {
+                setForm({ ...form, postalCode: e.target.value });
+                setPostalError("");
+              }}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "12px 16px",
+                border: postalError ? "1px solid #d32f2f" : "1px solid #e8e5e0",
+                borderRadius: 8,
+                fontSize: 14,
+              }}
+            />
+            {postalError && (
+              <div style={{ color: "#d32f2f", fontSize: 13, marginTop: 4 }}>
+                {postalError}
+              </div>
+            )}
+          </div>
+         <select
+         name="country"
+            id="country"
             value={form.country}
-            onChange={(e) => setForm({ ...form, country: e.target.value })}
+            onChange={(e) => {
+              setForm({ ...form, country: e.target.value });
+              setPostalError("");
+            }}
             style={{
               padding: "12px 16px",
               border: "1px solid #e8e5e0",
               borderRadius: 8,
               fontSize: 14,
+              background: "#fff",
+              color: form.country ? "#000" : "#a8a29a",
             }}
-          />
+          >
+            <option value="" disabled>
+              Select country
+            </option>
+            {countries.map((c) => (
+              <option key={c.code} value={c.name}>
+                {c.name}
+              </option>
+            ))}
+          </select>
           <button
             onClick={() => {
               if (
@@ -307,6 +347,11 @@ const Payment = () => {
                 toast.error("Please fill all fields");
                 return;
               }
+              if (!validatePostalCode(form.country, form.postalCode)) {
+                setPostalError("Invalid postal code for the selected country");
+                return;
+              }
+              setPostalError("");
               setStep(2);
             }}
             style={{

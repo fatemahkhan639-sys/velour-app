@@ -46,7 +46,7 @@ const products = [
     category: "Tops",
     images: [
       {
-        url: "https://placehold.co/600x800/e8e4dc/5a5248?text=Linen+Shirt",
+        url: "/linen-relaxed-shirt.jpg",
         alt: "Linen Shirt",
       },
     ],
@@ -65,7 +65,7 @@ const products = [
     category: "Bottoms",
     images: [
       {
-        url: "https://placehold.co/600x800/d4cfc8/5a5248?text=Trousers",
+        url: "/wide-leg-trousers.jpg",
         alt: "Trousers",
       },
     ],
@@ -84,7 +84,7 @@ const products = [
     category: "Tops",
     images: [
       {
-        url: "https://placehold.co/600x800/c8bfb4/5a5248?text=Knit",
+        url: "/merino-crew-knit.jpg",
         alt: "Knit",
       },
     ],
@@ -104,7 +104,7 @@ const products = [
     category: "Outerwear",
     images: [
       {
-        url: "https://placehold.co/600x800/b8b0a4/5a5248?text=Blazer",
+        url: "/oversized-blazer.jpg",
         alt: "Blazer",
       },
     ],
@@ -123,7 +123,7 @@ const products = [
     category: "Bottoms",
     images: [
       {
-        url: "https://placehold.co/600x800/e0d4c8/5a5248?text=Skirt",
+        url: "/satin-slip-skirt.jpg",
         alt: "Skirt",
       },
     ],
@@ -143,7 +143,7 @@ const products = [
     category: "Accessories",
     images: [
       {
-        url: "https://placehold.co/600x800/d8d0c4/5a5248?text=Tote",
+        url: "/tote-bag.jpg",
         alt: "Tote",
       },
     ],
@@ -162,7 +162,7 @@ const products = [
     category: "Outerwear",
     images: [
       {
-        url: "https://placehold.co/600x800/c4bfba/5a5248?text=Vest",
+        url: "/puffer-vest.jpg",
         alt: "Vest",
       },
     ],
@@ -181,7 +181,7 @@ const products = [
     category: "Tops",
     images: [
       {
-        url: "https://placehold.co/600x800/e8e4e0/5a5248?text=Tank",
+        url: "/ribbed-tank-top.jpg",
         alt: "Tank",
       },
     ],

@@ -8,6 +8,17 @@ const Navbar = () => {
   const user = JSON.parse(localStorage.getItem("velour_user") || "null");
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/shop?keyword=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+      setSearchOpen(false);
+    }
+  };
 
   const logout = () => {
     localStorage.removeItem("velour_token");
@@ -18,12 +29,14 @@ const Navbar = () => {
 
   return (
     <>
-      <style>{`
+     <style>{`
         .desktop-nav-links { display: flex; }
         .mobile-menu-btn { display: none; }
+        .user-greeting { display: inline; }
         @media (max-width: 768px) {
           .desktop-nav-links { display: none; }
           .mobile-menu-btn { display: block; }
+          .user-greeting { display: none; }
         }
       `}</style>
       {/* Announcement bar */}
@@ -137,6 +150,7 @@ const Navbar = () => {
                 onMouseLeave={() => setMenuOpen(false)}
               >
                 <span
+                  className="user-greeting"
                   style={{ fontSize: 13, color: "#6b6560", cursor: "pointer" }}
                 >
                   Hi, {user.name.split(" ")[0]}
@@ -244,6 +258,56 @@ const Navbar = () => {
                 </Link>
               </div>
             )}
+            {/* Search */}
+            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              {searchOpen ? (
+                <form onSubmit={handleSearch} style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    autoFocus
+                    type="text"
+                    name="search"
+                    id="navbar-search"
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onBlur={() => {
+                      if (!searchQuery) setSearchOpen(false);
+                    }}
+                    style={{
+                      padding: "8px 12px",
+                      border: "1px solid #e8e5e0",
+                      borderRadius: 20,
+                      fontSize: 13,
+                      width: 180,
+                      outline: "none",
+                    }}
+                  />
+                </form>
+              ) : (
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: 4,
+                    display: "flex",
+                  }}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <circle cx="11" cy="11" r="7" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </button>
+              )}
+            </div>
 
             <Link
               to="/cart"

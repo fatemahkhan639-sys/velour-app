@@ -34,7 +34,10 @@ const AnimatedSection = ({ children, delay = 0 }) => {
   );
 };
 
+import usePageTitle from "../hooks/usePageTitle";
+
 const Home = () => {
+  usePageTitle();
   const [products, setProducts] = useState([]);
   const [hovered, setHovered] = useState(null);
   const [heroLoaded, setHeroLoaded] = useState(false);
@@ -121,6 +124,8 @@ const Home = () => {
         .sale-title { font-size: 52px; }
 
         @media (max-width: 768px) {
+          .featured-grid { grid-template-columns: repeat(2,1fr) !important; gap: 12px !important; }
+          .featured-img { height: 200px !important; }
           .hero-cards { display: none !important; }
           .hero-badge { display: none !important; }
           .hero-padding { padding: 0 24px !important; }
@@ -845,102 +850,85 @@ const Home = () => {
               </Link>
             </div>
           </AnimatedSection>
-          <div
+            <div
+            className="featured-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
               gap: 20,
             }}
           >
-            {products.map((p, idx) => (
+            {products.slice(0, 4).map((p, idx) => (
               <AnimatedSection key={p._id} delay={idx * 0.07}>
                 <div
-                  className="product-card"
+                  className="product-card cat-card"
                   onClick={() => navigate(`/product/${p._id}`)}
-                  onMouseEnter={() => setHovered(p._id)}
-                  onMouseLeave={() => setHovered(null)}
                   style={{
-                    cursor: "pointer",
                     borderRadius: 12,
                     overflow: "hidden",
-                    background: "#fff",
-                    border: "1px solid #e8e5e0",
-                    transition: "all 0.3s",
+                    position: "relative",
+                    cursor: "pointer",
+                    display: "block",
                   }}
                 >
-                  <div style={{ overflow: "hidden", position: "relative" }}>
-                    <img
-                      className="product-img"
-                      src={p.images[0]?.url}
-                      alt={p.name}
-                      style={{ width: "100%", height: 280, objectFit: "cover" }}
-                    />
-                    {p.comparePrice && (
-                      <span
-                        style={{
-                          position: "absolute",
-                          top: 12,
-                          left: 12,
-                          background: "#c4602a",
-                          color: "#fff",
-                          fontSize: 10,
-                          padding: "4px 10px",
-                          borderRadius: 20,
-                          fontWeight: 600,
-                          letterSpacing: 1,
-                        }}
-                      >
-                        SALE
-                      </span>
-                    )}
-                    <div
+                  <img
+                    className="product-img featured-img"
+                    src={p.images[0]?.url}
+                    alt={p.name}
+                    style={{
+                      width: "100%",
+                      height: 280,
+                      objectFit: "cover",
+                      transition: "transform 0.5s",
+                    }}
+                  />
+                  {p.comparePrice && (
+                    <span
                       style={{
                         position: "absolute",
-                        inset: 0,
-                        background: "rgba(0,0,0,0.2)",
-                        opacity: hovered === p._id ? 1 : 0,
-                        transition: "opacity 0.3s",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
+                        top: 12,
+                        left: 12,
+                        background: "#c4602a",
+                        color: "#fff",
+                        fontSize: 10,
+                        padding: "4px 10px",
+                        borderRadius: 20,
+                        fontWeight: 600,
+                        letterSpacing: 1,
                       }}
                     >
-                      <span
-                        style={{
-                          background: "#fff",
-                          color: "#0f0f0f",
-                          padding: "10px 24px",
-                          borderRadius: 6,
-                          fontSize: 13,
-                          fontWeight: 500,
-                        }}
-                      >
-                        Quick View
-                      </span>
-                    </div>
-                  </div>
-                  <div style={{ padding: 16 }}>
+                      SALE
+                    </span>
+                  )}
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: "linear-gradient(transparent 50%, rgba(0,0,0,0.7))",
+                    }}
+                  />
+                  <div style={{ position: "absolute", bottom: 16, left: 16, right: 16 }}>
                     <p
                       style={{
+                        color: "rgba(255,255,255,0.6)",
                         fontSize: 10,
-                        color: "#a8a29a",
                         letterSpacing: 2,
-                        marginBottom: 6,
+                        marginBottom: 4,
                         textTransform: "uppercase",
                       }}
                     >
                       {p.category}
                     </p>
-                    <h3
+                    <p
                       style={{
-                        fontSize: 15,
-                        fontWeight: 500,
-                        marginBottom: 8,
+                        color: "#fff",
                         fontFamily: "Playfair Display, serif",
+                        fontSize: 16,
+                        marginBottom: 6,
                       }}
                     >
                       {p.name}
-                    </h3>
+                    </p>
                     <div
                       style={{
                         display: "flex",
@@ -948,21 +936,15 @@ const Home = () => {
                         alignItems: "center",
                       }}
                     >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                      >
-                        <span style={{ fontSize: 16, fontWeight: 600 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ color: "#fff", fontSize: 15, fontWeight: 600 }}>
                           ${p.price}
                         </span>
                         {p.comparePrice && (
                           <span
                             style={{
-                              fontSize: 13,
-                              color: "#a8a29a",
+                              fontSize: 12,
+                              color: "rgba(255,255,255,0.5)",
                               textDecoration: "line-through",
                             }}
                           >
@@ -970,32 +952,38 @@ const Home = () => {
                           </span>
                         )}
                       </div>
-                      <div>
-                        {"★★★★★".split("").map((s, i) => (
-                          <span
-                            key={i}
-                            style={{
-                              color:
-                                i < Math.round(p.rating)
-                                  ? "#d4a017"
-                                  : "#e8e5e0",
-                              fontSize: 12,
-                            }}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
+                      <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 11, letterSpacing: 1 }}>
+                        VIEW →
+                      </p>
                     </div>
                   </div>
                 </div>
               </AnimatedSection>
-            ))}
+           ))}
+          </div>
+          <div style={{ textAlign: "center", marginTop: 40 }}>
+            <Link
+              to="/shop"
+              style={{
+                display: "inline-block",
+                padding: "14px 36px",
+                border: "1px solid #0f0f0f",
+                borderRadius: 6,
+                fontSize: 13,
+                fontWeight: 600,
+                letterSpacing: 1,
+                color: "#0f0f0f",
+              }}
+            >
+              VIEW ALL PRODUCTS
+            </Link>
           </div>
         </div>
       </div>
 
       {/* Sale Banner */}
+
+      
       <AnimatedSection>
         <div
           style={{

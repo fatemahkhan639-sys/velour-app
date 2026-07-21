@@ -116,4 +116,35 @@ router.get("/", async (req, res) => {
   }
 });
 
+// PUT update order status (admin)
+router.put("/:id/status", async (req, res) => {
+  try {
+    const user = getUser(req);
+    if (!user) return res.status(401).json({ message: "Not authorized" });
+
+    const { status } = req.body;
+    const validStatuses = [
+      "pending",
+      "processing",
+      "shipped",
+      "delivered",
+      "cancelled",
+    ];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    order.status = status;
+    if (status === "delivered") order.isDelivered = true;
+
+    await order.save();
+    res.json({ order });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

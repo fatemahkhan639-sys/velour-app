@@ -3,11 +3,16 @@ import { useCart } from "../context/CartContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { countries, validatePostalCode } from "../data/countries";
+
+import usePageTitle from "../hooks/usePageTitle";
 
 const Checkout = () => {
+  usePageTitle("Checkout");
   const { items, total, clearCart } = useCart();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [postalError, setPostalError] = useState("");
   const [form, setForm] = useState({
     fullName: "",
     street: "",
@@ -20,8 +25,15 @@ const Checkout = () => {
   const tax = total * 0.1;
   const grandTotal = total + shipping + tax;
 
-  const handle = async (e) => {
+const handle = async (e) => {
     e.preventDefault();
+
+    if (!validatePostalCode(form.country, form.postalCode)) {
+      setPostalError("Invalid postal code for the selected country");
+      return;
+    }
+    setPostalError("");
+
     const token = localStorage.getItem("velour_token");
     if (!token) {
       toast.error("Please login first");
@@ -118,30 +130,55 @@ const Checkout = () => {
             }}
             required
           />
-          <input
-            placeholder="Postal code"
-            value={form.postalCode}
-            onChange={(e) => setForm({ ...form, postalCode: e.target.value })}
-            style={{
-              padding: "12px 16px",
-              border: "1px solid #ddd",
-              borderRadius: 8,
-              fontSize: 14,
-            }}
-            required
-          />
-          <input
-            placeholder="Country"
+          <div>
+            <input
+              placeholder="Postal code"
+              value={form.postalCode}
+              onChange={(e) => {
+                setForm({ ...form, postalCode: e.target.value });
+                setPostalError("");
+              }}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "12px 16px",
+                border: postalError ? "1px solid #d32f2f" : "1px solid #ddd",
+                borderRadius: 8,
+                fontSize: 14,
+              }}
+              required
+            />
+            {postalError && (
+              <div style={{ color: "#d32f2f", fontSize: 13, marginTop: 4 }}>
+                {postalError}
+              </div>
+            )}
+          </div>
+          <select
             value={form.country}
-            onChange={(e) => setForm({ ...form, country: e.target.value })}
+            onChange={(e) => {
+              setForm({ ...form, country: e.target.value });
+              setPostalError("");
+            }}
             style={{
               padding: "12px 16px",
               border: "1px solid #ddd",
               borderRadius: 8,
               fontSize: 14,
+              background: "#fff",
+              color: form.country ? "#000" : "#888",
             }}
             required
-          />
+          >
+            <option value="" disabled>
+              Select country
+            </option>
+            {countries.map((c) => (
+              <option key={c.code} value={c.name}>
+                {c.name}
+              </option>
+            ))}
+          </select>
           <button
             type="submit"
             disabled={loading}

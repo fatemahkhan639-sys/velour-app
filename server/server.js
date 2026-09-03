@@ -7,7 +7,9 @@ dotenv.config();
 connectDB();
 
 const app = express();
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({
+  origin: ["http://localhost:5173", "https://velour-j964lldrl-fatemah-khan.vercel.app"]
+}));
 app.use(express.json());
 
 app.use("/api/auth", require("./routes/auth"));

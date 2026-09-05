@@ -29,14 +29,18 @@ const Navbar = () => {
 
   return (
     <>
-     <style>{`
+      <style>{`
         .desktop-nav-links { display: flex; }
         .mobile-menu-btn { display: none; }
         .user-greeting { display: inline; }
+        .auth-links { display: flex; }
+        .mobile-auth-bar { display: none; }
         @media (max-width: 768px) {
           .desktop-nav-links { display: none; }
           .mobile-menu-btn { display: block; }
           .user-greeting { display: none; }
+          .auth-links { display: none; }
+          .mobile-auth-bar { display: flex; }
         }
       `}</style>
       {/* Announcement bar */}
@@ -246,7 +250,7 @@ const Navbar = () => {
                 )}
               </div>
             ) : (
-              <div style={{ display: "flex", gap: 16 }}>
+              <div className="auth-links" style={{ gap: 16 }}>
                 <Link to="/login" style={{ fontSize: 13, color: "#6b6560" }}>
                   Sign in
                 </Link>
@@ -351,6 +355,31 @@ const Navbar = () => {
               )}
             </Link>
           </div>
+        </div>
+
+        {/* Mobile-only auth bar, always visible below the main row on small screens */}
+        <div
+          className="mobile-auth-bar"
+          style={{
+            justifyContent: "center",
+            gap: 20,
+            padding: "10px 24px",
+            borderTop: "1px solid #f4f3f0",
+            fontSize: 13,
+          }}
+        >
+          {user ? (
+            <span style={{ color: "#6b6560" }}>Hi, {user.name.split(" ")[0]}</span>
+          ) : (
+            <>
+              <Link to="/login" style={{ color: "#6b6560" }}>
+                Sign in
+              </Link>
+              <Link to="/register" style={{ color: "#0f0f0f", fontWeight: 500 }}>
+                Register
+              </Link>
+            </>
+          )}
         </div>
       </nav>
       {/* Mobile dropdown menu */}

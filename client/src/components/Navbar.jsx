@@ -33,14 +33,17 @@ const Navbar = () => {
         .desktop-nav-links { display: flex; }
         .mobile-menu-btn { display: none; }
         .user-greeting { display: inline; }
-        .auth-links { display: flex; }
-        .mobile-auth-bar { display: none; }
+        .auth-links { display: flex; gap: 16px; font-size: 13px; }
+        .navbar-logo { font-size: 22px; letter-spacing: 6px; }
+        .search-icon-wrap { display: flex; }
         @media (max-width: 768px) {
           .desktop-nav-links { display: none; }
           .mobile-menu-btn { display: block; }
           .user-greeting { display: none; }
-          .auth-links { display: none; }
-          .mobile-auth-bar { display: flex; }
+          .auth-links { gap: 8px; font-size: 11px; }
+          .navbar-logo { font-size: 15px; letter-spacing: 2px; }
+          .search-icon-wrap { display: none; }
+          .right-actions-gap { gap: 10px !important; }
         }
       `}</style>
       {/* Announcement bar */}
@@ -71,82 +74,86 @@ const Navbar = () => {
           style={{
             maxWidth: 1200,
             margin: "0 auto",
-            padding: "0 24px",
+            padding: "0 16px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             height: 64,
           }}
         >
-          {/* Left links */}
-          <div
-            className="desktop-nav-links"
-            style={{
-              gap: 32,
-              fontSize: 13,
-              letterSpacing: 0.5,
-            }}
-          >
-            <Link to="/shop" style={{ color: "#6b6560" }}>
-              Shop
-            </Link>
-            <Link to="/shop?category=Tops" style={{ color: "#6b6560" }}>
-              Tops
-            </Link>
-            <Link to="/shop?category=Outerwear" style={{ color: "#6b6560" }}>
-              Outerwear
-            </Link>
-            <Link
-              to="/shop?tag=sale"
-              style={{ color: "#c4602a", fontWeight: 500 }}
+          {/* Left: hamburger + desktop links */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {/* Mobile hamburger button */}
+            <button
+              className="mobile-menu-btn"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 4,
+                flexShrink: 0,
+              }}
             >
-              Sale
-            </Link>
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+
+            <div
+              className="desktop-nav-links"
+              style={{
+                gap: 32,
+                fontSize: 13,
+                letterSpacing: 0.5,
+              }}
+            >
+              <Link to="/shop" style={{ color: "#6b6560" }}>
+                Shop
+              </Link>
+              <Link to="/shop?category=Tops" style={{ color: "#6b6560" }}>
+                Tops
+              </Link>
+              <Link to="/shop?category=Outerwear" style={{ color: "#6b6560" }}>
+                Outerwear
+              </Link>
+              <Link
+                to="/shop?tag=sale"
+                style={{ color: "#c4602a", fontWeight: 500 }}
+              >
+                Sale
+              </Link>
+            </div>
           </div>
 
-          {/* Mobile hamburger button */}
-          <button
-            className="mobile-menu-btn"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 8,
-            }}
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
-
-          {/* Logo center */}
+          {/* Logo */}
           <Link
             to="/"
+            className="navbar-logo"
             style={{
-              fontSize: 22,
-              letterSpacing: 6,
               fontFamily: "Playfair Display, serif",
               fontWeight: 400,
-              position: "absolute",
-              left: "50%",
-              transform: "translateX(-50%)",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
             }}
           >
             VELOUR
           </Link>
 
           {/* Right actions */}
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <div
+            className="right-actions-gap"
+            style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}
+          >
             {user ? (
               <div
                 style={{ position: "relative" }}
@@ -250,20 +257,20 @@ const Navbar = () => {
                 )}
               </div>
             ) : (
-              <div className="auth-links" style={{ gap: 16 }}>
-                <Link to="/login" style={{ fontSize: 13, color: "#6b6560" }}>
+              <div className="auth-links" style={{ whiteSpace: "nowrap" }}>
+                <Link to="/login" style={{ color: "#6b6560" }}>
                   Sign in
                 </Link>
                 <Link
                   to="/register"
-                  style={{ fontSize: 13, color: "#0f0f0f", fontWeight: 500 }}
+                  style={{ color: "#0f0f0f", fontWeight: 500 }}
                 >
                   Register
                 </Link>
               </div>
             )}
-            {/* Search */}
-            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+            {/* Search — hidden on mobile, moved into dropdown menu instead */}
+            <div className="search-icon-wrap" style={{ position: "relative", alignItems: "center" }}>
               {searchOpen ? (
                 <form onSubmit={handleSearch} style={{ display: "flex", alignItems: "center" }}>
                   <input
@@ -322,6 +329,7 @@ const Navbar = () => {
                 fontSize: 13,
                 color: "#0f0f0f",
                 fontWeight: 500,
+                flexShrink: 0,
               }}
             >
               <svg
@@ -356,31 +364,6 @@ const Navbar = () => {
             </Link>
           </div>
         </div>
-
-        {/* Mobile-only auth bar, always visible below the main row on small screens */}
-        <div
-          className="mobile-auth-bar"
-          style={{
-            justifyContent: "center",
-            gap: 20,
-            padding: "10px 24px",
-            borderTop: "1px solid #f4f3f0",
-            fontSize: 13,
-          }}
-        >
-          {user ? (
-            <span style={{ color: "#6b6560" }}>Hi, {user.name.split(" ")[0]}</span>
-          ) : (
-            <>
-              <Link to="/login" style={{ color: "#6b6560" }}>
-                Sign in
-              </Link>
-              <Link to="/register" style={{ color: "#0f0f0f", fontWeight: 500 }}>
-                Register
-              </Link>
-            </>
-          )}
-        </div>
       </nav>
       {/* Mobile dropdown menu */}
       {mobileMenuOpen && (
@@ -395,6 +378,22 @@ const Navbar = () => {
             gap: 16,
           }}
         >
+          <form onSubmit={handleSearch} style={{ display: "flex" }}>
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                border: "1px solid #e8e5e0",
+                borderRadius: 20,
+                fontSize: 14,
+                outline: "none",
+              }}
+            />
+          </form>
           <Link
             to="/shop"
             onClick={() => setMobileMenuOpen(false)}

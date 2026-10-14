@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import toast from "react-hot-toast";
 import { useCart } from "../context/CartContext";
+import toast from "react-hot-toast";
 
 const ProductDetail = () => {
   const { id } = useParams();

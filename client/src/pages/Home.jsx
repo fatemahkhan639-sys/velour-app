@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
+import { useCart } from "../context/CartContext";
+import toast from "react-hot-toast";
 
 const useInView = (threshold = 0.1) => {
   const ref = useRef(null);
@@ -14,7 +16,7 @@ const useInView = (threshold = 0.1) => {
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
-  }, []);
+  }, [threshold]);
   return [ref, inView];
 };
 
@@ -39,36 +41,35 @@ import usePageTitle from "../hooks/usePageTitle";
 const Home = () => {
   usePageTitle();
   const [products, setProducts] = useState([]);
-  const [hovered, setHovered] = useState(null);
-  const [heroLoaded, setHeroLoaded] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
   const [count, setCount] = useState({ orders: 0, products: 0, customers: 0 });
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
   const [statsRef, statsInView] = useInView();
-  const heroRef = useRef(null);
-  const navigate = useNavigate();
+  const { addItem } = useCart();
+  const [selected, setSelected] = useState(null);
+  const [size, setSize] = useState("");
+  const [color, setColor] = useState("");
+
+  const closeModal = () => {
+    setSelected(null);
+    setSize("");
+    setColor("");
+  };
+
+  const handleAdd = () => {
+    if (!size) return toast.error("Please select a size");
+    if (!color) return toast.error("Please select a color");
+    addItem(selected, size, color);
+    toast.success("Added to cart!");
+    closeModal();
+  };
 
   useEffect(() => {
-    setTimeout(() => setHeroLoaded(true), 100);
     axios
       .get("/api/products")
       .then((r) => setProducts(r.data.products || []))
       .catch(() => setProducts([]));
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-  useEffect(() => {
-    if (isMobile) return;
-    const handleMouse = (e) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 2;
-      const y = (e.clientY / window.innerHeight - 0.5) * 2;
-      setMousePos({ x, y });
-    };
-    window.addEventListener("mousemove", handleMouse);
-    return () => window.removeEventListener("mousemove", handleMouse);
-  }, [isMobile]);
 
   useEffect(() => {
     if (!statsInView) return;
@@ -88,34 +89,16 @@ const Home = () => {
     return () => clearInterval(timer);
   }, [statsInView]);
 
-  const parallax = (strength) =>
-    isMobile
-      ? {}
-      : {
-          transform: `translate(${mousePos.x * strength}px, ${mousePos.y * strength}px)`,
-          transition: "transform 0.1s ease-out",
-        };
-
   return (
     <div style={{ overflowX: "hidden" }}>
       <style>{`
-        @keyframes float1 { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-20px) rotate(3deg)} }
-        @keyframes float2 { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-14px) rotate(-2deg)} }
-        @keyframes float3 { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-24px) rotate(4deg)} }
-        @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-        @keyframes scrollLine { 0%{transform:scaleY(0);transform-origin:top} 50%{transform:scaleY(1);transform-origin:top} 51%{transform:scaleY(1);transform-origin:bottom} 100%{transform:scaleY(0);transform-origin:bottom} }
-        @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-        @keyframes pulse3d { 0%,100%{box-shadow:0 0 0 0 rgba(196,96,42,0.3)} 50%{box-shadow:0 0 0 20px rgba(196,96,42,0)} }
-        @keyframes textGlow { 0%,100%{text-shadow:0 0 20px rgba(196,96,42,0)} 50%{text-shadow:0 0 40px rgba(196,96,42,0.3)} }
         .product-card:hover { transform: translateY(-8px) !important; box-shadow: 0 24px 64px rgba(0,0,0,0.15) !important; }
         .product-img { transition: transform 0.6s ease !important; }
         .product-card:hover .product-img { transform: scale(1.08) !important; }
         .cat-card { transition: transform 0.4s ease, box-shadow 0.4s ease !important; }
         .cat-card:hover { transform: translateY(-6px) scale(1.02) !important; box-shadow: 0 20px 48px rgba(0,0,0,0.2) !important; }
 
-        .hero-cards { display: block; }
-        .hero-padding { padding: 0 80px; }
-        .hero-title { font-size: 80px; }
+        
         .stats-grid { grid-template-columns: repeat(3,1fr); }
         .category-grid { grid-template-columns: repeat(4,1fr); }
         .features-grid { grid-template-columns: repeat(4,1fr); }
@@ -126,520 +109,112 @@ const Home = () => {
         @media (max-width: 768px) {
           .featured-grid { grid-template-columns: repeat(2,1fr) !important; gap: 12px !important; }
           .featured-img { height: 200px !important; }
-          .hero-cards { display: none !important; }
-          .hero-badge { display: none !important; }
-          .hero-padding { padding: 0 24px !important; }
-          .hero-title { font-size: 44px !important; }
           .stats-grid { grid-template-columns: repeat(3,1fr) !important; gap: 8px !important; }
           .category-grid { grid-template-columns: repeat(2,1fr) !important; }
           .features-grid { grid-template-columns: repeat(2,1fr) !important; }
           .footer-grid { grid-template-columns: 1fr 1fr !important; gap: 24px !important; }
           .footer-bottom { flex-direction: column !important; gap: 8px !important; text-align: center !important; }
           .sale-title { font-size: 32px !important; }
-          .hero-buttons a { padding: 12px 24px !important; font-size: 12px !important; }
-          .hero-mini-stats { gap: 20px !important; margin-top: 32px !important; }
         }
 
         @media (max-width: 480px) {
-          .hero-title { font-size: 36px !important; }
           .features-grid { grid-template-columns: 1fr 1fr !important; }
         }
       `}</style>
 
       {/* HERO */}
-      <div
-        ref={heroRef}
-        style={{
-          minHeight: "100vh",
-          background:
-            "linear-gradient(135deg, #0f0e0c 0%, #1a1610 40%, #2a1f14 100%)",
-          position: "relative",
-          overflow: "hidden",
-          display: "flex",
-          alignItems: "center",
-          perspective: "1000px",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(45deg, rgba(196,96,42,0.08), rgba(212,160,23,0.05), rgba(196,96,42,0.08))",
-            backgroundSize: "400% 400%",
-            animation: "gradientShift 8s ease infinite",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
-            backgroundSize: "60px 60px",
-            ...parallax(5),
-          }}
-        />
+      <section className="hero">
+        <style>{`
+          .hero { background: #f4f1ec; }
+          .hero-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 72px 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 64px;
+            align-items: center;
+          }
+          .hero-label {
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #6b6560;
+            margin-bottom: 20px;
+          }
+          .hero-heading {
+            font-family: "Playfair Display", serif;
+            font-weight: 400;
+            font-size: 56px;
+            line-height: 1.1;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+          }
+          .hero-text {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #5c5750;
+            max-width: 420px;
+            margin-bottom: 32px;
+          }
+          .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+          .hero-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            border: 1px solid #1a1a1a;
+            border-radius: 2px;
+            transition: background 0.2s, color 0.2s;
+          }
+          .hero-btn-primary { background: #1a1a1a; color: #fff; }
+          .hero-btn-primary:hover { background: #333; }
+          .hero-btn-secondary { background: transparent; color: #1a1a1a; }
+          .hero-btn-secondary:hover { background: #1a1a1a; color: #fff; }
+          .hero-image {
+            display: block;
+            width: 100%;
+            aspect-ratio: 4 / 5;
+            max-height: 640px;
+            object-fit: cover;
+            border-radius: 2px;
+          }
+          @media (max-width: 768px) {
+            .hero-inner {
+              grid-template-columns: 1fr;
+              gap: 32px;
+              padding: 40px 24px;
+            }
+            .hero-heading { font-size: 38px; }
+          }
+        `}</style>
 
-        {/* Orbs */}
-        <div
-          style={{
-            position: "absolute",
-            top: "15%",
-            right: "20%",
-            width: 300,
-            height: 300,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle at 35% 35%, rgba(196,96,42,0.4), rgba(196,96,42,0.05) 60%, transparent)",
-            filter: "blur(1px)",
-            animation: "float1 6s ease-in-out infinite",
-            ...parallax(-15),
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: "20%",
-            right: "35%",
-            width: 180,
-            height: 180,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle at 40% 40%, rgba(212,160,23,0.3), transparent 70%)",
-            animation: "float2 8s ease-in-out infinite",
-            ...parallax(-10),
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: "40%",
-            right: "8%",
-            width: 120,
-            height: 120,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle at 40% 40%, rgba(196,96,42,0.5), transparent 70%)",
-            animation: "float3 5s ease-in-out infinite",
-            ...parallax(-20),
-          }}
-        />
-
-        {/* 3D Cards - hidden on mobile */}
-        <div
-          className="hero-cards"
-          style={{
-            position: "absolute",
-            right: "8%",
-            top: "12%",
-            animation: "float1 7s ease-in-out infinite",
-            ...parallax(-12),
-          }}
-        >
-          <div
-            style={{
-              width: 180,
-              height: 240,
-              borderRadius: 16,
-              overflow: "hidden",
-              boxShadow:
-                "0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)",
-              transform: "rotateY(-15deg) rotateX(5deg)",
-              transformStyle: "preserve-3d",
-            }}
-          >
-            <img
-              src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=400"
-              alt="New In"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: "linear-gradient(transparent 60%, rgba(0,0,0,0.4))",
-                display: "flex",
-                alignItems: "flex-end",
-                padding: 16,
-              }}
-            >
-              <p
-                style={{
-                  color: "#fff",
-                  fontSize: 12,
-                  fontWeight: 500,
-                  letterSpacing: 1,
-                }}
-              >
-                NEW IN
-              </p>
+        <div className="hero-inner">
+          <div>
+            <p className="hero-label">New season</p>
+            <h1 className="hero-heading">Everyday clothing, well made.</h1>
+            <p className="hero-text">
+              Thoughtfully designed pieces in quality fabrics. Made to be worn
+              often and to last.
+            </p>
+            <div className="hero-actions">
+              <Link to="/shop" className="hero-btn hero-btn-primary">
+                SHOP NOW
+              </Link>
+              <Link to="/shop?tag=sale" className="hero-btn hero-btn-secondary">
+                VIEW SALE
+              </Link>
             </div>
           </div>
+
+          <img
+            className="hero-image"
+            src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=1200&q=80"
+            alt="Model wearing a blue coat from the new season collection"
+          />
         </div>
-
-        <div
-          className="hero-cards"
-          style={{
-            position: "absolute",
-            right: "22%",
-            top: "18%",
-            animation: "float2 9s ease-in-out infinite",
-            ...parallax(-8),
-          }}
-        >
-          <div
-            style={{
-              width: 200,
-              height: 280,
-              borderRadius: 16,
-              overflow: "hidden",
-              boxShadow:
-                "0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.08)",
-              transform: "rotateY(-8deg) rotateX(3deg)",
-              transformStyle: "preserve-3d",
-            }}
-          >
-            <img
-              src="https://images.unsplash.com/photo-1516826957135-700dedea698c?w=400"
-              alt="Essentials"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: "linear-gradient(transparent 60%, rgba(0,0,0,0.4))",
-                display: "flex",
-                alignItems: "flex-end",
-                padding: 16,
-              }}
-            >
-              <p
-                style={{
-                  color: "#fff",
-                  fontSize: 12,
-                  fontWeight: 500,
-                  letterSpacing: 1,
-                }}
-              >
-                ESSENTIALS
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="hero-cards"
-          style={{
-            position: "absolute",
-            right: "6%",
-            bottom: "15%",
-            animation: "float3 6s ease-in-out infinite",
-            ...parallax(-18),
-          }}
-        >
-          <div
-            style={{
-              width: 150,
-              height: 200,
-              borderRadius: 12,
-              overflow: "hidden",
-              boxShadow:
-                "0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)",
-              transform: "rotateY(-20deg) rotateX(8deg)",
-            }}
-          >
-            <img
-              src="https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=400"
-              alt="Sale"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "linear-gradient(transparent 60%, rgba(196,96,42,0.6))",
-                display: "flex",
-                alignItems: "flex-end",
-                padding: 12,
-              }}
-            >
-              <p
-                style={{
-                  color: "#fff",
-                  fontSize: 11,
-                  fontWeight: 500,
-                  letterSpacing: 1,
-                }}
-              >
-                SALE
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Badge - hidden on mobile */}
-        <div
-          className="hero-badge"
-          style={{
-            position: "absolute",
-            right: "32%",
-            bottom: "28%",
-            background: "rgba(255,255,255,0.08)",
-            backdropFilter: "blur(12px)",
-            border: "1px solid rgba(255,255,255,0.15)",
-            borderRadius: 12,
-            padding: "12px 20px",
-            animation: "float2 7s ease-in-out infinite",
-            ...parallax(-6),
-          }}
-        >
-          <p style={{ color: "#fff", fontSize: 12, fontWeight: 500 }}>
-            ⭐ 4.9 Rating
-          </p>
-          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }}>
-            4,300+ reviews
-          </p>
-        </div>
-
-        {/* Hero text */}
-        <div
-          className="hero-padding"
-          style={{
-            maxWidth: 1200,
-            margin: "0 auto",
-            position: "relative",
-            zIndex: 10,
-            width: "100%",
-          }}
-        >
-          <div style={{ maxWidth: 560 }}>
-            <div
-              style={{
-                opacity: heroLoaded ? 1 : 0,
-                transform: heroLoaded ? "translateY(0)" : "translateY(30px)",
-                transition: "all 1s ease 0.1s",
-              }}
-            >
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  background: "rgba(196,96,42,0.15)",
-                  border: "1px solid rgba(196,96,42,0.3)",
-                  borderRadius: 20,
-                  padding: "6px 16px",
-                  marginBottom: 24,
-                }}
-              >
-                <div
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: "#c4602a",
-                    animation: "pulse3d 2s infinite",
-                  }}
-                />
-                <p
-                  style={{
-                    fontSize: 11,
-                    letterSpacing: 3,
-                    color: "#c4602a",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Summer 2026 Collection
-                </p>
-              </div>
-            </div>
-
-            <div
-              style={{
-                opacity: heroLoaded ? 1 : 0,
-                transform: heroLoaded ? "translateY(0)" : "translateY(40px)",
-                transition: "all 1s ease 0.3s",
-              }}
-            >
-              <h1
-                className="hero-title"
-                style={{
-                  lineHeight: 1.05,
-                  marginBottom: 20,
-                  fontFamily: "Playfair Display, serif",
-                  fontWeight: 400,
-                  color: "#fff",
-                  animation: heroLoaded ? "textGlow 4s ease infinite" : "none",
-                }}
-              >
-                Style that
-                <br />
-                <em
-                  style={{
-                    fontStyle: "italic",
-                    color: "transparent",
-                    background:
-                      "linear-gradient(90deg, #c4602a, #d4a017, #c4602a)",
-                    backgroundSize: "200% auto",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    animation: "shimmer 3s linear infinite",
-                  }}
-                >
-                  speaks
-                </em>
-                <br />
-                for itself.
-              </h1>
-            </div>
-
-            <div
-              style={{
-                opacity: heroLoaded ? 1 : 0,
-                transform: heroLoaded ? "translateY(0)" : "translateY(40px)",
-                transition: "all 1s ease 0.5s",
-              }}
-            >
-              <p
-                style={{
-                  fontSize: 15,
-                  color: "rgba(255,255,255,0.55)",
-                  lineHeight: 1.8,
-                  marginBottom: 32,
-                  maxWidth: 420,
-                }}
-              >
-                Curated fashion for the modern wardrobe. Premium fabrics,
-                timeless silhouettes, effortless elegance.
-              </p>
-              <div
-                className="hero-buttons"
-                style={{ display: "flex", gap: 12, flexWrap: "wrap" }}
-              >
-                <Link
-                  to="/shop"
-                  style={{
-                    background: "linear-gradient(135deg, #c4602a, #d4a017)",
-                    color: "#fff",
-                    padding: "14px 32px",
-                    borderRadius: 6,
-                    fontSize: 13,
-                    letterSpacing: 1,
-                    fontWeight: 600,
-                    boxShadow: "0 8px 32px rgba(196,96,42,0.4)",
-                    display: "inline-block",
-                  }}
-                >
-                  SHOP NOW
-                </Link>
-                <Link
-                  to="/shop?tag=sale"
-                  style={{
-                    background: "rgba(255,255,255,0.08)",
-                    backdropFilter: "blur(10px)",
-                    color: "#fff",
-                    padding: "14px 32px",
-                    borderRadius: 6,
-                    fontSize: 13,
-                    letterSpacing: 1,
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    display: "inline-block",
-                  }}
-                >
-                  VIEW SALE
-                </Link>
-              </div>
-            </div>
-
-            <div
-              className="hero-mini-stats"
-              style={{
-                display: "flex",
-                gap: 32,
-                marginTop: 48,
-                opacity: heroLoaded ? 1 : 0,
-                transition: "all 1s ease 0.8s",
-              }}
-            >
-              {[
-                ["4,300+", "Customers"],
-                ["86+", "Products"],
-                ["4.9★", "Rating"],
-              ].map(([val, label]) => (
-                <div key={label}>
-                  <p
-                    style={{
-                      fontSize: 18,
-                      fontWeight: 700,
-                      color: "#fff",
-                      fontFamily: "Playfair Display, serif",
-                    }}
-                  >
-                    {val}
-                  </p>
-                  <p
-                    style={{
-                      fontSize: 10,
-                      color: "rgba(255,255,255,0.4)",
-                      letterSpacing: 1,
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 24,
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 8,
-            opacity: heroLoaded ? 1 : 0,
-            transition: "all 1s ease 1.2s",
-          }}
-        >
-          <p
-            style={{
-              fontSize: 10,
-              letterSpacing: 3,
-              color: "rgba(255,255,255,0.3)",
-              textTransform: "uppercase",
-            }}
-          >
-            Scroll
-          </p>
-          <div
-            style={{
-              width: 1,
-              height: 40,
-              background: "rgba(255,255,255,0.2)",
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: "#c4602a",
-                animation: "scrollLine 1.5s ease infinite",
-              }}
-            />
-          </div>
-        </div>
-      </div>
+      </section>
 
       {/* Stats */}
       <div
@@ -850,7 +425,7 @@ const Home = () => {
               </Link>
             </div>
           </AnimatedSection>
-            <div
+          <div
             className="featured-grid"
             style={{
               display: "grid",
@@ -862,7 +437,7 @@ const Home = () => {
               <AnimatedSection key={p._id} delay={idx * 0.07}>
                 <div
                   className="product-card cat-card"
-                  onClick={() => navigate(`/product/${p._id}`)}
+                  onClick={() => setSelected(p)}
                   style={{
                     borderRadius: 12,
                     overflow: "hidden",
@@ -904,10 +479,18 @@ const Home = () => {
                     style={{
                       position: "absolute",
                       inset: 0,
-                      background: "linear-gradient(transparent 50%, rgba(0,0,0,0.7))",
+                      background:
+                        "linear-gradient(transparent 50%, rgba(0,0,0,0.7))",
                     }}
                   />
-                  <div style={{ position: "absolute", bottom: 16, left: 16, right: 16 }}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 16,
+                      left: 16,
+                      right: 16,
+                    }}
+                  >
                     <p
                       style={{
                         color: "rgba(255,255,255,0.6)",
@@ -936,8 +519,20 @@ const Home = () => {
                         alignItems: "center",
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ color: "#fff", fontSize: 15, fontWeight: 600 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
+                        <span
+                          style={{
+                            color: "#fff",
+                            fontSize: 15,
+                            fontWeight: 600,
+                          }}
+                        >
                           ${p.price}
                         </span>
                         {p.comparePrice && (
@@ -952,14 +547,30 @@ const Home = () => {
                           </span>
                         )}
                       </div>
-                      <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 11, letterSpacing: 1 }}>
-                        VIEW →
-                      </p>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelected(p);
+                        }}
+                        style={{
+                          background: "#fff",
+                          color: "#1a1a1a",
+                          border: "none",
+                          borderRadius: 2,
+                          padding: "8px 14px",
+                          fontSize: 11,
+                          letterSpacing: 1,
+                          fontWeight: 500,
+                          cursor: "pointer",
+                        }}
+                      >
+                        ADD TO CART
+                      </button>
                     </div>
                   </div>
                 </div>
               </AnimatedSection>
-           ))}
+            ))}
           </div>
           <div style={{ textAlign: "center", marginTop: 40 }}>
             <Link
@@ -983,7 +594,6 @@ const Home = () => {
 
       {/* Sale Banner */}
 
-      
       <AnimatedSection>
         <div
           style={{
@@ -1098,6 +708,194 @@ const Home = () => {
             </AnimatedSection>
           ))}
         </div>
+        {/* Product pop-up */}
+        {selected && (
+          <div
+            onClick={closeModal}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.5)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 24,
+              zIndex: 1000,
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: "#fff",
+                borderRadius: 8,
+                maxWidth: 820,
+                width: "100%",
+                maxHeight: "90vh",
+                overflowY: "auto",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                position: "relative",
+              }}
+            >
+              <button
+                onClick={closeModal}
+                aria-label="Close"
+                style={{
+                  position: "absolute",
+                  top: 12,
+                  right: 16,
+                  background: "none",
+                  border: "none",
+                  fontSize: 24,
+                  cursor: "pointer",
+                  color: "#1a1a1a",
+                }}
+              >
+                ×
+              </button>
+
+              <img
+                src={selected.images[0]?.url}
+                alt={selected.name}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  minHeight: 320,
+                  objectFit: "cover",
+                }}
+              />
+
+              <div style={{ padding: 32 }}>
+                <p
+                  style={{
+                    fontSize: 12,
+                    letterSpacing: 2,
+                    color: "#6b6560",
+                    textTransform: "uppercase",
+                    marginBottom: 8,
+                  }}
+                >
+                  {selected.category}
+                </p>
+                <h3
+                  style={{
+                    fontFamily: "Playfair Display, serif",
+                    fontWeight: 400,
+                    fontSize: 28,
+                    marginBottom: 12,
+                  }}
+                >
+                  {selected.name}
+                </h3>
+                <p style={{ fontSize: 20, marginBottom: 16 }}>
+                  ${selected.price}
+                  {selected.comparePrice && (
+                    <span
+                      style={{
+                        fontSize: 14,
+                        color: "#999",
+                        textDecoration: "line-through",
+                        marginLeft: 10,
+                      }}
+                    >
+                      ${selected.comparePrice}
+                    </span>
+                  )}
+                </p>
+                <p
+                  style={{
+                    fontSize: 14,
+                    lineHeight: 1.7,
+                    color: "#5c5750",
+                    marginBottom: 20,
+                  }}
+                >
+                  {selected.description}
+                </p>
+
+                <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
+                  Size
+                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    flexWrap: "wrap",
+                    marginBottom: 16,
+                  }}
+                >
+                  {selected.sizes.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setSize(s)}
+                      style={{
+                        padding: "8px 14px",
+                        border: `1px solid ${size === s ? "#1a1a1a" : "#ddd"}`,
+                        borderRadius: 2,
+                        background: size === s ? "#1a1a1a" : "#fff",
+                        color: size === s ? "#fff" : "#1a1a1a",
+                        fontSize: 13,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+
+                <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
+                  Color
+                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    flexWrap: "wrap",
+                    marginBottom: 24,
+                  }}
+                >
+                  {selected.colors.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setColor(c)}
+                      style={{
+                        padding: "8px 14px",
+                        border: `1px solid ${color === c ? "#1a1a1a" : "#ddd"}`,
+                        borderRadius: 2,
+                        background: color === c ? "#1a1a1a" : "#fff",
+                        color: color === c ? "#fff" : "#1a1a1a",
+                        fontSize: 13,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleAdd}
+                  disabled={selected.stock <= 0}
+                  style={{
+                    width: "100%",
+                    padding: 14,
+                    background: "#1a1a1a",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 2,
+                    fontSize: 13,
+                    letterSpacing: 1,
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    opacity: selected.stock <= 0 ? 0.5 : 1,
+                  }}
+                >
+                  {selected.stock > 0 ? "ADD TO CART" : "OUT OF STOCK"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Footer */}

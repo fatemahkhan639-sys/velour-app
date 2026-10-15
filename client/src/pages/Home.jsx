@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { useCart } from "../context/CartContext";
-import toast from "react-hot-toast";
+import ProductModal from "../components/ProductModal";
+import usePageTitle from "../hooks/usePageTitle";
 
 const useInView = (threshold = 0.1) => {
   const ref = useRef(null);
@@ -36,33 +36,12 @@ const AnimatedSection = ({ children, delay = 0 }) => {
   );
 };
 
-import usePageTitle from "../hooks/usePageTitle";
-
 const Home = () => {
   usePageTitle();
   const [products, setProducts] = useState([]);
-
   const [count, setCount] = useState({ orders: 0, products: 0, customers: 0 });
-
   const [statsRef, statsInView] = useInView();
-  const { addItem } = useCart();
   const [selected, setSelected] = useState(null);
-  const [size, setSize] = useState("");
-  const [color, setColor] = useState("");
-
-  const closeModal = () => {
-    setSelected(null);
-    setSize("");
-    setColor("");
-  };
-
-  const handleAdd = () => {
-    if (!size) return toast.error("Please select a size");
-    if (!color) return toast.error("Please select a color");
-    addItem(selected, size, color);
-    toast.success("Added to cart!");
-    closeModal();
-  };
 
   useEffect(() => {
     axios
@@ -98,7 +77,6 @@ const Home = () => {
         .cat-card { transition: transform 0.4s ease, box-shadow 0.4s ease !important; }
         .cat-card:hover { transform: translateY(-6px) scale(1.02) !important; box-shadow: 0 20px 48px rgba(0,0,0,0.2) !important; }
 
-        
         .stats-grid { grid-template-columns: repeat(3,1fr); }
         .category-grid { grid-template-columns: repeat(4,1fr); }
         .features-grid { grid-template-columns: repeat(4,1fr); }
@@ -515,6 +493,7 @@ const Home = () => {
                       {p.name}
                     </p>
                     <div
+                      className="card-footer"
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
@@ -599,7 +578,6 @@ const Home = () => {
       </div>
 
       {/* Sale Banner */}
-
       <AnimatedSection>
         <div
           style={{
@@ -714,198 +692,12 @@ const Home = () => {
             </AnimatedSection>
           ))}
         </div>
-        {/* Product pop-up */}
-        {selected && (
-          <div
-            onClick={closeModal}
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0,0,0,0.5)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 24,
-              zIndex: 1000,
-            }}
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                background: "#fff",
-                borderRadius: 8,
-                maxWidth: 820,
-                width: "100%",
-                maxHeight: "90vh",
-                overflowY: "auto",
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                position: "relative",
-              }}
-            >
-              <button
-                onClick={closeModal}
-                aria-label="Close"
-                style={{
-                  position: "absolute",
-                  top: 12,
-                  right: 16,
-                  background: "none",
-                  border: "none",
-                  fontSize: 24,
-                  cursor: "pointer",
-                  color: "#1a1a1a",
-                }}
-              >
-                ×
-              </button>
-
-              <img
-                src={selected.images[0]?.url}
-                alt={selected.name}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  minHeight: 320,
-                  objectFit: "cover",
-                }}
-              />
-
-              <div style={{ padding: 32 }}>
-                <p
-                  style={{
-                    fontSize: 12,
-                    letterSpacing: 2,
-                    color: "#6b6560",
-                    textTransform: "uppercase",
-                    marginBottom: 8,
-                  }}
-                >
-                  {selected.category}
-                </p>
-                <h3
-                  style={{
-                    fontFamily: "Playfair Display, serif",
-                    fontWeight: 400,
-                    fontSize: 28,
-                    marginBottom: 12,
-                  }}
-                >
-                  {selected.name}
-                </h3>
-                <p style={{ fontSize: 20, marginBottom: 16 }}>
-                  ${selected.price}
-                  {selected.comparePrice && (
-                    <span
-                      style={{
-                        fontSize: 14,
-                        color: "#999",
-                        textDecoration: "line-through",
-                        marginLeft: 10,
-                      }}
-                    >
-                      ${selected.comparePrice}
-                    </span>
-                  )}
-                </p>
-                <p
-                  style={{
-                    fontSize: 14,
-                    lineHeight: 1.7,
-                    color: "#5c5750",
-                    marginBottom: 20,
-                  }}
-                >
-                  {selected.description}
-                </p>
-
-                <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
-                  Size
-                </p>
-                <div
-                  className="card-footer"
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: 8,
-                    flexWrap: "wrap",
-                    marginBottom: 16,
-                  }}
-                >
-                  {selected.sizes.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setSize(s)}
-                      style={{
-                        padding: "8px 14px",
-                        border: `1px solid ${size === s ? "#1a1a1a" : "#ddd"}`,
-                        borderRadius: 2,
-                        background: size === s ? "#1a1a1a" : "#fff",
-                        color: size === s ? "#fff" : "#1a1a1a",
-                        fontSize: 13,
-                        cursor: "pointer",
-                      }}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-
-                <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
-                  Color
-                </p>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 8,
-                    flexWrap: "wrap",
-                    marginBottom: 24,
-                  }}
-                >
-                  {selected.colors.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => setColor(c)}
-                      style={{
-                        padding: "8px 14px",
-                        border: `1px solid ${color === c ? "#1a1a1a" : "#ddd"}`,
-                        borderRadius: 2,
-                        background: color === c ? "#1a1a1a" : "#fff",
-                        color: color === c ? "#fff" : "#1a1a1a",
-                        fontSize: 13,
-                        cursor: "pointer",
-                      }}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  onClick={handleAdd}
-                  disabled={selected.stock <= 0}
-                  style={{
-                    width: "100%",
-                    padding: 14,
-                    background: "#1a1a1a",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 2,
-                    fontSize: 13,
-                    letterSpacing: 1,
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    opacity: selected.stock <= 0 ? 0.5 : 1,
-                  }}
-                >
-                  {selected.stock > 0 ? "ADD TO CART" : "OUT OF STOCK"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Product pop-up */}
+      {selected && (
+        <ProductModal product={selected} onClose={() => setSelected(null)} />
+      )}
 
       {/* Footer */}
       <footer

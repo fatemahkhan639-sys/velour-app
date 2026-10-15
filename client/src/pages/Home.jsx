@@ -109,6 +109,8 @@ const Home = () => {
         @media (max-width: 768px) {
           .featured-grid { grid-template-columns: repeat(2,1fr) !important; gap: 12px !important; }
           .featured-img { height: 200px !important; }
+          .card-footer { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
+          .card-btn { width: 100% !important; }
           .stats-grid { grid-template-columns: repeat(3,1fr) !important; gap: 8px !important; }
           .category-grid { grid-template-columns: repeat(2,1fr) !important; }
           .features-grid { grid-template-columns: repeat(2,1fr) !important; }
@@ -550,6 +552,7 @@ const Home = () => {
                         )}
                       </div>
                       <button
+                        className="card-btn"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelected(p);
@@ -820,8 +823,11 @@ const Home = () => {
                   Size
                 </p>
                 <div
+                  className="card-footer"
                   style={{
                     display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
                     gap: 8,
                     flexWrap: "wrap",
                     marginBottom: 16,

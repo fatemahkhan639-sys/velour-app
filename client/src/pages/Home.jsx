@@ -517,6 +517,8 @@ const Home = () => {
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: 8,
                       }}
                     >
                       <div
@@ -562,6 +564,7 @@ const Home = () => {
                           letterSpacing: 1,
                           fontWeight: 500,
                           cursor: "pointer",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         ADD TO CART
